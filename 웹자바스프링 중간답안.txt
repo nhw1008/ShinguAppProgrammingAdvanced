@@ -1,0 +1,28 @@
+웹자바스프링 중간답안
+1 - 4
+2 - 3
+3 - 1
+4 - 2
+5 - 2		
+6 - 4  	// 3-1-2	web.xml
+7 - 3
+8 - webapp/resources/img
+9 - home
+10 - 1
+11 - 4
+12 - 
+13 - 2
+14 - booklist
+15 - book
+16 - 4
+17 - db/db.properties		// classpath로 resources까지는 접속 가능
+18 - 1
+19 - 1				// @PostConstruct는 bean이 등록되기전
+20 - books/all
+21 - 3
+22 - 4
+23 - isbn312
+24 - 2				// clone() -> 동일한 객체를 만들어주는 메소드
+					// notify() -> 객체를 모니터링해서 락 or 통지
+					// toString() -> 객체를 String형으로 변환
+25 - 1
