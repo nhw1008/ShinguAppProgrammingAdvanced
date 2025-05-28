@@ -1,0 +1,133 @@
+12주차 인터셉터 메모
+
+로그데이터 -> 비정형데이터 ex) 특정 시간대 티켓팅 로그데이터 분석
+Log4j2 -> open source contributors
+
+
+5p
+Logger -> 로그를 기록해주는 진입접 
+Filter -> 치명도에 따른 필터 개발중에는 로그 치명도 필터 수준을 낮춤
+		ex) 이거는 정보성, 디버깅, 추적 등등..
+Appender -> 특정 대상에 로그이벤트를 전달
+Layout -> 로그를 기록하는 형식(필요에 따라 json, xml, sql 방식으로도)
+
+
+6p
+message queue appenders의 ex) JMS(Java Message Service)
+비동기적 통신
+ams -event-> Java Message Service -이벤트토스!!-> app
+앱이 다시 역순으로 토스
+
+servlet appendes의 ex)
+현재 우리는 톰캣 & 스프링프레임워크의 Servlet Appender를 이원화해서 사용중
+서버 시작시 빨간 글씨 -> 톰캣 로그
+
+delegating appenders 중계
+
+
+7p
+commander창의 입출력 데이터를 console태그가 인터셉트해서 보여줌
+Logger -> 각각의 이런 로거는 이런 레벨로 기록
+	ex) <Logger name="org.springframework.web" level="DEBUG"/>  -> 요건 디버그 "이상"의 치명도만 기록
+
+<Root level="INFO" additivity="false">
+	<AppenderRef ref="console"/>
+</Root>
+<Logger name="com.springmvc" level="DEBUG"/>
+<Logger name="org.springframework.core" level="INFO"/>
+	 -> 설정 따로 안하면 루트레벨의 INFO 따라감
+
+로그4j2 설정은
+src/main/resources/
+└── log4j2.xml  ← 이 파일만 생성하면 끝!
+
+
+8p
+slf4j -> 더 좋은 로깅 라이브러리가 나오면 설정만 변경하면 되고, 코드를 수정할 필요가 없습니다
+
+9p
+TRACE < DEBUG < INFO < WARN < ERROR 순으로 레벨이 높아짐
+
+10p
+LoggerFactory로 불러옴
+
+11p
+로그파일 백업 및 새로운 로그파일 생성의 기준 -> 보통 날짜와 파일 크기
+RollingFile Appender -> 10~20개 정해놓고 백업하고 계속 선회
+filePAttern -> 파일 이름 패턴
+name -> 어펜더의 이름
+bufferSize -> 어느정도의 데이터를 메모리로 저장하고 있다가 로그데이터파일에 기록
+createOnDemand -> true면 필요할때만 기록 false면 항시
+fileName -> 패턴중에 적을 이름
+filePermissions -> 로그파일에 접글할 권한을 설정
+immediateFlush -> 이벤트가 발생했을때 flush(저장)할거임? 설정
+
+
+12p
+
+<SizeBasedTriggeringPolicy size="10KB"/>	-> 10kb 초과시 파일 교체
+<TimeBasedTriggeringPolicy interval="1"/> 	-> </Console>
+			<RollingFile name="monitor" fileName="C:/webjavaapp/{학번}/logs/monitor.log"
+			filePattern="C:/webjavaapp/{학번}/logs/monitor.%d{yyyy-MM-dd-hh-mm}.log"> 
+			중에 mm, 즉 분마다 교체
+
+
+
+        <Logger name="com.springmvc" level="DEBUG">
+            <AppenderRef ref="monitor"/>
+        </Logger>
+		-> monitor appender로 전송, 동시에 루트로거도 동일한 로그이벤트 처리, 루트로거가 자신의 어펜더로 전송, 즉 두번 로그 기록!!!
+
+
+15p
+디도스 차단 구현도 인터셉터로 가능함!
+AOP(Aspect Oriented Programming) 관점 지향 프로그래밍 -> 이제는 인터셉터로 사용
+
+
+16p
+<interceptors>
+	<beans:bean id="인터셉터 아이디"
+			  class="패키지 경로를 포함한 인터셉터 클래스명" />
+</interceptors>
+
+-> 인터셉터내에 bean 하면 모든 HTTP요청에 인터셉터가 실행됨
+-> 컨트롤러 메소드 실행 전/후, 뷰 렌더링 전/후
+
+
+18p
+주석 잘 읽어보세요
+
+
+19p
+AsyncHandlerInterceptor -> 비동기 호출 인터셉터
+
+
+20p
+왜 비동기적 처리가 필요한가? 
+비동기적 처리는 "요청을 서버에 전달할 처리"와 "요청을 실행할 처리"가 나눠져있어서
+서버 스레드를 잡아먹지 않고 있을 수 있음!!
+
+비동기적 처리는 invoke때 전처리, setREsult()때 후처리를 함!!
+
+
+21p
+
+this.log.info("접근한 URL 경로: {}", this.getURLPath(request));
+this.log.info("요청처리시작시간: {}", this.getCurrentTime());
+-> 자체적 파라미터 {} ,콤마 뒤에 파라미터랑 매칭 *slf4j에서는 로그를 만드는 과정에서의 오버헤드를 방지하기 위해 저렇게 사용
+
+
+23p
+필드의 값은 인스턴스와 귀속
+but ThreadLocal은 스레드에 귀속
+
+A a = new A();
+thread 1               |        thread 2
+a.set(홍길동)         |            a.set(강감찬)
+                          |
+a.get()                  |         a.get()
+-> 홍길동 반환     |         -> 강감찬 반환
+
+
+26p
+HandlerInterceptorAdapter은 ㅃㅃㅇ~!
